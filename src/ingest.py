@@ -54,6 +54,15 @@ SCHEMAS = {
         ["submission_id", "filer_name"],
         [pa.string(), pa.string()],
     ),
+    "documents": (
+        ["submission_id", "document_name", "download_status",
+         "document_id", "file_extension"],
+        [pa.string()] * 5,
+    ),
+    "docs_cited": (
+        ["cite_id", "submission_id", "document_id"],
+        [pa.string()] * 3,
+    ),
 }
 
 COPY_RE = re.compile(r"^COPY public\.(\w+) \([^)]+\) FROM stdin;\s*$")
