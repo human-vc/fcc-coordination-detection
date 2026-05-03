@@ -100,15 +100,16 @@ def main() -> None:
                     schema = pa.schema(list(zip(cols, types)))
                     out_path = OUT / f"{table}.parquet"
                     writer = pq.ParquetWriter(out_path, schema, compression="zstd")
-                    active = (table, writer, cols, types, [])
+                    active = (table, writer, cols, types, [], 0)
                     bar.set_postfix(table=table, rows=0)
             else:
                 if line.startswith(r"\.") and (len(line) == 2 or line[2] in "\r\n"):
-                    table, writer, cols, types, buf = active
+                    table, writer, cols, types, buf, written = active
                     if buf:
                         write_batch(writer, cols, types, buf)
+                        written += len(buf)
                     writer.close()
-                    bar.set_postfix(table=table, rows="done")
+                    bar.set_postfix(table=table, rows=f"{written:,} done")
                     active = None
                 else:
                     fields = line.rstrip("\n").split("\t")
@@ -116,14 +117,15 @@ def main() -> None:
                         active[4].append([unesc(x) for x in fields])
                         if len(active[4]) >= BATCH:
                             write_batch(active[1], active[2], active[3], active[4])
-                            bar.set_postfix(table=active[0],
-                                            rows=f"{pq.read_metadata(OUT / f'{active[0]}.parquet').num_rows:,}+")
-                            active[4].clear()
+                            active = (active[0], active[1], active[2], active[3], [], active[5] + len(active[4]))
+                            bar.set_postfix(table=active[0], rows=f"{active[5]:,}+")
 
             line = f.readline()
             bar.update(len(line.encode("utf-8", errors="replace")))
 
         if active is not None:
+            if active[4]:
+                write_batch(active[1], active[2], active[3], active[4])
             active[1].close()
 
     bar.close()
