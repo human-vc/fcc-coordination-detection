@@ -130,7 +130,8 @@ def run_minhash_lsh(idx: pd.DataFrame, a_mask: np.ndarray, *,
     row_to_g = {int(r): i for i, r in enumerate(nodes)}
     src_g = df_edges["src"].map(row_to_g).to_numpy(dtype=np.int64)
     dst_g = df_edges["dst"].map(row_to_g).to_numpy(dtype=np.int64)
-    g = ig.Graph(n=len(nodes), edges=list(zip(src_g, dst_g)), directed=False)
+    edge_array = np.column_stack((src_g, dst_g))
+    g = ig.Graph(n=len(nodes), edges=edge_array, directed=False)
     g.simplify()
     cc = g.connected_components()
     membership = np.asarray(cc.membership, dtype=np.int64)
@@ -151,7 +152,8 @@ def run_connected_components(idx: pd.DataFrame, a_mask: np.ndarray, *,
     row_to_g = {int(r): i for i, r in enumerate(nodes)}
     src_g = edges["src_row"].map(row_to_g).to_numpy(dtype=np.int64)
     dst_g = edges["dst_row"].map(row_to_g).to_numpy(dtype=np.int64)
-    g = ig.Graph(n=len(nodes), edges=list(zip(src_g, dst_g)), directed=False)
+    edge_array = np.column_stack((src_g, dst_g))
+    g = ig.Graph(n=len(nodes), edges=edge_array, directed=False)
     cc = g.connected_components()
     membership = np.asarray(cc.membership, dtype=np.int64)
 

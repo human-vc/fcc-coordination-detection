@@ -27,18 +27,25 @@ RES = ROOT / "results"
 RES.mkdir(exist_ok=True)
 
 
-def load_method(method: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    if method == "leiden":
+def load_method(method: str, *, cluster_path: Path | None = None,
+                rejections_path: Path | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+    if cluster_path is not None:
+        cl = pq.read_table(cluster_path).to_pandas()
+    elif method == "leiden":
         cl = pq.read_table(PROC / "clusters.parquet").to_pandas()
     else:
         cl = pq.read_table(PROC / f"clusters_{method}.parquet").to_pandas()
-    rj = pq.read_table(RES / f"fdr_rejections_{method}.parquet").to_pandas()
+    rj_path = rejections_path or (RES / f"fdr_rejections_{method}.parquet")
+    rj = pq.read_table(rj_path).to_pandas()
     return cl, rj
 
 
 def evaluate(method: str, gold_thresholds: list[int],
-             majority_fracs: list[float]) -> list[dict]:
-    cl, rj = load_method(method)
+             majority_fracs: list[float], *,
+             cluster_path: Path | None = None,
+             rejections_path: Path | None = None) -> list[dict]:
+    cl, rj = load_method(method, cluster_path=cluster_path,
+                         rejections_path=rejections_path)
     # only the rejected clusters from e-BH
     rejected_ids = set(rj.loc[rj["rejected_ebh"], "cluster_id"].astype(int).tolist())
     rejected_n = len(rejected_ids)
@@ -81,18 +88,23 @@ def evaluate(method: str, gold_thresholds: list[int],
 
 
 def main(*, methods: list[str], gold_thresholds: list[int],
-         majority_fracs: list[float]) -> None:
+         majority_fracs: list[float],
+         cluster_path: Path | None = None,
+         rejections_path: Path | None = None,
+         output: Path | None = None) -> None:
     all_rows = []
     for m in methods:
         try:
-            all_rows.extend(evaluate(m, gold_thresholds, majority_fracs))
+            all_rows.extend(evaluate(m, gold_thresholds, majority_fracs,
+                                      cluster_path=cluster_path,
+                                      rejections_path=rejections_path))
         except FileNotFoundError as e:
             print(f"  skip {m}: {e}")
     out = pd.DataFrame(all_rows)
     if out.empty:
         print("no methods evaluated")
         return
-    path = RES / "cluster_eval_table.csv"
+    path = output or (RES / "cluster_eval_table.csv")
     out.to_csv(path, index=False)
     # pretty-print: a focused view at majority_frac=0.5
     focus = out[out["majority_frac"] == 0.5].drop(columns=["majority_frac"])
@@ -109,6 +121,12 @@ if __name__ == "__main__":
                    default=[10, 100, 1000])
     p.add_argument("--majority-fracs", nargs="+", type=float,
                    default=[0.3, 0.5, 0.8])
+    p.add_argument("--cluster-path", type=Path, default=None)
+    p.add_argument("--rejections-path", type=Path, default=None)
+    p.add_argument("--output", type=Path, default=None)
     args = p.parse_args()
     main(methods=args.methods, gold_thresholds=args.gold_thresholds,
-         majority_fracs=args.majority_fracs)
+         majority_fracs=args.majority_fracs,
+         cluster_path=args.cluster_path,
+         rejections_path=args.rejections_path,
+         output=args.output)

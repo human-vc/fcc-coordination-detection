@@ -22,7 +22,20 @@ SPLIT_PATH = PROC / "split_assignment.parquet"
 OUT_PATH = PROC / "clusters.parquet"
 
 
-def main(*, resolution: float = 1.0, min_cluster_size: int = 5) -> None:
+def main(*, resolution: float = 0.90, min_cluster_size: int = 5,
+         partition: str = "cpm", out_path: Path | None = None) -> None:
+    """Run Leiden community detection on the kNN similarity graph.
+
+    partition='cpm' uses Constant Potts Model (resolution-limit-free; resolution
+    parameter has the interpretation of a similarity threshold for the cosine-
+    weighted graph). partition='rb' uses RBConfigurationVertexPartition, which
+    has a known resolution limit on graphs with heterogeneous community sizes
+    and produced the 213K mega-cluster failure mode in v1.
+
+    See Traag, Van Dooren, Nesterov 2011 (arXiv:1104.3083) on RB resolution limits
+    and the leidenalg docs for the CPM density interpretation.
+    """
+    out_path = out_path or OUT_PATH
     print(f"loading edges from {EDGES_PATH}...")
     edges = pq.read_table(EDGES_PATH).to_pandas()
     print(f"loaded {len(edges):,} edges")
@@ -44,15 +57,24 @@ def main(*, resolution: float = 1.0, min_cluster_size: int = 5) -> None:
     src_g = edges["src_row"].map(row_to_g).to_numpy(dtype=np.int64)
     dst_g = edges["dst_row"].map(row_to_g).to_numpy(dtype=np.int64)
     weights = edges["similarity"].to_numpy(dtype=np.float32)
+    edge_array = np.column_stack((src_g, dst_g))  # avoid Python list of tuples (~6 GB at 50M edges)
+    del edges
 
-    g = ig.Graph(n=len(active_rows), edges=list(zip(src_g, dst_g)), directed=False)
+    g = ig.Graph(n=len(active_rows), edges=edge_array, directed=False)
     g.es["weight"] = weights.tolist()
     g.simplify(combine_edges={"weight": "max"})
     print(f"graph: {g.vcount():,} nodes, {g.ecount():,} edges")
 
-    print(f"running Leiden (resolution={resolution})...")
+    if partition == "cpm":
+        partition_cls = la.CPMVertexPartition
+        print(f"running Leiden / CPM (gamma={resolution}, similarity threshold)...")
+    elif partition == "rb":
+        partition_cls = la.RBConfigurationVertexPartition
+        print(f"running Leiden / RBConfig (resolution={resolution}, has resolution limit)...")
+    else:
+        raise ValueError(f"unknown partition: {partition}")
     parts = la.find_partition(
-        g, la.RBConfigurationVertexPartition,
+        g, partition_cls,
         weights="weight", resolution_parameter=resolution,
         n_iterations=-1, seed=42,
     )
@@ -76,13 +98,18 @@ def main(*, resolution: float = 1.0, min_cluster_size: int = 5) -> None:
         print(f"  total rows in those clusters: {int(big.sum()):,}")
         print(f"  largest cluster: {int(big.iloc[0]):,} rows")
 
-    out.to_parquet(OUT_PATH, compression="zstd", index=False)
-    print(f"\nwrote {OUT_PATH}")
+    out.to_parquet(out_path, compression="zstd", index=False)
+    print(f"\nwrote {out_path}")
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--resolution", type=float, default=1.0)
+    p.add_argument("--resolution", type=float, default=0.90,
+                   help="for CPM, similarity threshold in [0,1]; for RB, modularity scale")
+    p.add_argument("--partition", choices=["cpm", "rb"], default="cpm",
+                   help="cpm = Constant Potts (resolution-limit-free); rb = RBConfiguration")
     p.add_argument("--min-cluster-size", type=int, default=5)
+    p.add_argument("--out-path", type=Path, default=None)
     args = p.parse_args()
-    main(resolution=args.resolution, min_cluster_size=args.min_cluster_size)
+    main(resolution=args.resolution, partition=args.partition,
+         min_cluster_size=args.min_cluster_size, out_path=args.out_path)
