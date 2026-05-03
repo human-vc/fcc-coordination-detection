@@ -197,12 +197,14 @@ def run_hdbscan(idx: pd.DataFrame, a_mask: np.ndarray, *,
 
 
 def main(*, methods: list[str], threshold: float, min_cluster_size: int,
-         minhash_subsample: int | None = None,
+         minhash_subsample: int | None = 500_000,
+         minhash_num_perm: int = 64,
          hdbscan_subsample: int = 200_000) -> None:
     idx, a_mask = load_split()
 
     if "minhash_lsh" in methods:
         run_minhash_lsh(idx, a_mask, threshold=threshold,
+                        num_perm=minhash_num_perm,
                         min_cluster_size=min_cluster_size,
                         subsample=minhash_subsample)
     if "connected_components" in methods:
@@ -220,12 +222,15 @@ if __name__ == "__main__":
     p.add_argument("--threshold", type=float, default=0.85,
                    help="MinHash Jaccard threshold (also used for kNN)")
     p.add_argument("--min-cluster-size", type=int, default=5)
-    p.add_argument("--minhash-subsample", type=int, default=None,
-                   help="cap MinHash to this many A-rows (default: full A-half)")
+    p.add_argument("--minhash-subsample", type=int, default=500_000,
+                   help="cap MinHash to this many A-rows (OOM at 1.9M)")
+    p.add_argument("--minhash-num-perm", type=int, default=64,
+                   help="MinHash permutations (lower = less memory)")
     p.add_argument("--hdbscan-subsample", type=int, default=200_000,
                    help="HDBSCAN doesn't scale to >~300K; subsample first")
     args = p.parse_args()
     main(methods=args.methods, threshold=args.threshold,
          min_cluster_size=args.min_cluster_size,
          minhash_subsample=args.minhash_subsample,
+         minhash_num_perm=args.minhash_num_perm,
          hdbscan_subsample=args.hdbscan_subsample)
