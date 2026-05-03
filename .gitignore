@@ -1,0 +1,58 @@
+# Data — never commit raw or processed corpora
+data/raw/
+data/processed/
+data/embeddings/
+*.tar.gz
+*.parquet
+*.pickle
+*.pkl
+*.npy
+*.npz
+*.h5
+*.hdf5
+
+# Database dumps
+*.pgsql
+*.sql
+*.db
+
+# Model weights
+models/
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# Results that include large intermediate state
+results/cache/
+results/figures/*.png
+!results/figures/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.env
+.env.local
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Jupyter
+notebooks/.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs
+*.log
+logs/

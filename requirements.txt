@@ -1,0 +1,15 @@
+numpy>=1.26
+pandas>=2.2
+scipy>=1.13
+scikit-learn>=1.5
+duckdb>=1.0
+sentence-transformers>=3.0
+torch>=2.2
+networkx>=3.3
+igraph>=0.11
+leidenalg>=0.10
+matplotlib>=3.9
+seaborn>=0.13
+tqdm>=4.66
+pyarrow>=17.0
+psycopg2-binary>=2.9
