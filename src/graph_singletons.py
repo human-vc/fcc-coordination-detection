@@ -44,9 +44,20 @@ def main(*, k: int = 50, threshold: float = 0.85, half: str = "A") -> None:
 
     emb_q = np.ascontiguousarray(emb[sel])
 
-    print(f"building FAISS index ({len(emb_q):,} vectors)...")
-    index = faiss.IndexFlatIP(d)
+    use_exact = len(emb_q) <= 200_000
+    if use_exact:
+        print(f"building FAISS IndexFlatIP ({len(emb_q):,} vectors, exact)...")
+        index = faiss.IndexFlatIP(d)
+    else:
+        # HNSW with M=32, efSearch=128 gives ~99% recall at ~100x speedup
+        # over brute force at the 1M+ scale. Required for tractability.
+        print(f"building FAISS IndexHNSWFlat ({len(emb_q):,} vectors, M=32)...")
+        index = faiss.IndexHNSWFlat(d, 32, faiss.METRIC_INNER_PRODUCT)
+        index.hnsw.efConstruction = 200
+        index.hnsw.efSearch = 128
+    t0 = time()
     index.add(emb_q)
+    print(f"  index build took {time()-t0:.1f}s")
 
     print(f"querying top-{k} neighbors...")
     t0 = time()
