@@ -69,12 +69,31 @@ COPY_RE = re.compile(r"^COPY public\.(\w+) \([^)]+\) FROM stdin;\s*$")
 BATCH = 100_000
 
 
+_ESC = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t", "v": "\v", "\\": "\\"}
+
+
 def unesc(field: str) -> str | None:
-    """Postgres COPY uses \\N for NULL and standard backslash escapes."""
+    """Postgres COPY uses \\N for NULL and backslash escapes for control chars.
+
+    Single-pass left-to-right scan so '\\\\t' (literal backslash + t) is not
+    confused with '\\t' (tab character).
+    """
     if field == r"\N":
         return None
-    return (field.replace(r"\t", "\t").replace(r"\n", "\n")
-                 .replace(r"\r", "\r").replace(r"\\", "\\"))
+    if "\\" not in field:
+        return field
+    out: list[str] = []
+    i, n = 0, len(field)
+    while i < n:
+        c = field[i]
+        if c == "\\" and i + 1 < n:
+            nxt = field[i + 1]
+            out.append(_ESC.get(nxt, nxt))
+            i += 2
+        else:
+            out.append(c)
+            i += 1
+    return "".join(out)
 
 
 def write_batch(writer: pq.ParquetWriter, cols: list[str], types: list[pa.DataType],

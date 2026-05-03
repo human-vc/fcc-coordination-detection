@@ -49,8 +49,8 @@ def main(*, batch_size: int | None = None, model_name: str = "all-MiniLM-L6-v2",
 
     print("loading template-size counts...")
     con = duckdb.connect()
-    con.execute("CREATE VIEW c AS SELECT * FROM read_parquet('data/processed/comments.parquet')")
-    con.execute("CREATE VIEW s AS SELECT * FROM read_parquet('data/processed/submissions.parquet')")
+    con.execute(f"CREATE VIEW c AS SELECT * FROM read_parquet('{PROC / 'comments.parquet'}')")
+    con.execute(f"CREATE VIEW s AS SELECT * FROM read_parquet('{PROC / 'submissions.parquet'}')")
 
     # join: each unique comment + how many submissions reference it
     sql = """
