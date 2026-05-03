@@ -56,7 +56,9 @@ def main() -> None:
         check(f"column {col}", col in idx.columns)
     check("row_id contiguous 0..n-1", (idx["row_id"].to_numpy() == np.arange(n_emb)).all(),
           "row_id must equal positional index for emb[row_id] to work")
-    check("template_size>=1 always", (idx["template_size"] >= 1).all() if "template_size" in idx else False)
+    n_zero = int((idx["template_size"] == 0).sum())
+    check("template_size>=0 always", (idx["template_size"] >= 0).all(),
+          f"{n_zero:,} comment_ids have template_size=0 (no submission references them; OK)")
 
     print("\n[4/6] new v2 code imports cleanly...")
     sys.path.insert(0, str(ROOT / "src"))
