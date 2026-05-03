@@ -1,7 +1,7 @@
 """Run Leiden community detection on the kNN similarity graph.
 
-Output: data/processed/clusters.parquet with columns
-    row_id, comment_id, template_size, cluster_id, cluster_size
+Operates on whichever half graph_singletons.py wrote (default: A). Rows in the
+held-out half receive cluster_id = -2; non-clustered active rows get -1.
 """
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROC = ROOT / "data" / "processed"
 EDGES_PATH = PROC / "knn_edges.parquet"
 IDX_PATH = PROC / "embedding_index.parquet"
+SPLIT_PATH = PROC / "split_assignment.parquet"
 OUT_PATH = PROC / "clusters.parquet"
 
 
@@ -26,20 +27,23 @@ def main(*, resolution: float = 1.0, min_cluster_size: int = 5) -> None:
     edges = pq.read_table(EDGES_PATH).to_pandas()
     print(f"loaded {len(edges):,} edges")
 
-    print(f"loading index from {IDX_PATH}...")
     idx = pq.read_table(IDX_PATH).to_pandas()
     n = len(idx)
-    print(f"index has {n:,} rows")
+    print(f"corpus size: {n:,}")
 
-    # Only nodes that appear in edges are in the active subgraph; everyone else is a singleton.
-    active_rows = pd.unique(pd.concat([edges["src_row"], edges["dst_row"]]))
-    print(f"active (non-isolated) rows: {len(active_rows):,}")
+    if SPLIT_PATH.exists():
+        split = pq.read_table(SPLIT_PATH).to_pandas()
+        held_out = (split["split"].to_numpy() == "B")
+    else:
+        held_out = np.zeros(n, dtype=bool)
 
-    # build mapping: original row_id -> compact graph idx
-    row_to_gidx = pd.Series(np.arange(len(active_rows), dtype=np.int64), index=active_rows)
-    src_g = row_to_gidx.loc[edges["src_row"].values].to_numpy()
-    dst_g = row_to_gidx.loc[edges["dst_row"].values].to_numpy()
-    weights = edges["similarity"].to_numpy()
+    active_rows = pd.unique(pd.concat([edges["src_row"], edges["dst_row"]])).astype(np.int64)
+    print(f"active (with edges): {len(active_rows):,}")
+
+    row_to_g = {int(r): i for i, r in enumerate(active_rows)}
+    src_g = edges["src_row"].map(row_to_g).to_numpy(dtype=np.int64)
+    dst_g = edges["dst_row"].map(row_to_g).to_numpy(dtype=np.int64)
+    weights = edges["similarity"].to_numpy(dtype=np.float32)
 
     g = ig.Graph(n=len(active_rows), edges=list(zip(src_g, dst_g)), directed=False)
     g.es["weight"] = weights.tolist()
@@ -52,28 +56,28 @@ def main(*, resolution: float = 1.0, min_cluster_size: int = 5) -> None:
         weights="weight", resolution_parameter=resolution,
         n_iterations=-1, seed=42,
     )
-    membership = np.array(parts.membership, dtype=np.int64)
-    print(f"clusters found: {membership.max() + 1:,}")
+    membership = np.asarray(parts.membership, dtype=np.int64)
+    n_clusters = int(membership.max() + 1) if len(membership) else 0
+    print(f"clusters found: {n_clusters:,}")
 
-    # map back to full index space; isolated nodes get cluster_id = -1
     cluster_for_row = np.full(n, -1, dtype=np.int64)
     cluster_for_row[active_rows] = membership
+    cluster_for_row[held_out] = -2
 
     out = idx.copy()
     out["cluster_id"] = cluster_for_row
     sizes = pd.Series(cluster_for_row).value_counts()
-    out["cluster_size"] = out["cluster_id"].map(sizes).fillna(0).astype(np.int64)
-    # don't count -1 isolates as a cluster of huge size
-    out.loc[out["cluster_id"] == -1, "cluster_size"] = 1
+    out["cluster_size"] = out["cluster_id"].map(sizes).fillna(1).astype(np.int64)
+    out.loc[out["cluster_id"] < 0, "cluster_size"] = 1
 
     big = sizes[(sizes.index >= 0) & (sizes >= min_cluster_size)]
     print(f"clusters with size >= {min_cluster_size}: {len(big):,}")
-    print(f"  total rows in those clusters: {int(big.sum()):,}")
     if len(big):
+        print(f"  total rows in those clusters: {int(big.sum()):,}")
         print(f"  largest cluster: {int(big.iloc[0]):,} rows")
 
     out.to_parquet(OUT_PATH, compression="zstd", index=False)
-    print(f"\nwrote {OUT_PATH}  ({OUT_PATH.stat().st_size/1e6:.1f} MB)")
+    print(f"\nwrote {OUT_PATH}")
 
 
 if __name__ == "__main__":

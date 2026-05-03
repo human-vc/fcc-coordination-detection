@@ -1,15 +1,18 @@
-"""Evaluate detection quality against template-size gold labels.
+"""Evaluate detection quality across methods and gold definitions.
 
-Gold definition:
-    coordinated_gold = template_size >= GOLD_THRESHOLD
-where template_size is the count of submissions sharing the same comment_id.
+Two evaluation regimes:
 
-The interesting evaluation regime is the *hard* one: among singletons
-(template_size == 1), how many does the e-BH procedure flag as part of a
-rejected cluster, and what does spot-checking reveal?
+1. **Mega-template sanity check.** Comments with template_size >= 100 are
+   essentially-certain coordination (they were submitted thousands of times
+   identically). A working detector must rediscover them with high precision.
+   This is *not* the headline result — it just confirms the pipeline is sane.
 
-Outputs both a confusion matrix on the all-clusters regime and a singleton-
-only analysis.
+2. **Singleton soft-coordination regime.** Among comments with template_size
+   == 1 (genuinely unique submissions), how many does each method flag as
+   part of an FDR-rejected cluster? These are the *interesting* detections —
+   coordinated content paraphrased to evade exact-match counting. There is no
+   clean ground truth; the v1 paper reports counts and qualitative
+   spot-checks.
 """
 from __future__ import annotations
 
@@ -27,66 +30,97 @@ RES.mkdir(exist_ok=True)
 
 
 def confusion(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, int]:
-    tp = int(((y_true) & (y_pred)).sum())
-    fp = int((~y_true & (y_pred)).sum())
-    fn = int(((y_true) & ~y_pred).sum())
-    tn = int((~y_true & ~y_pred).sum())
-    return {"TP": tp, "FP": fp, "FN": fn, "TN": tn}
+    return {
+        "TP": int((y_true & y_pred).sum()),
+        "FP": int((~y_true & y_pred).sum()),
+        "FN": int((y_true & ~y_pred).sum()),
+        "TN": int((~y_true & ~y_pred).sum()),
+    }
 
 
 def metrics(c: dict[str, int]) -> dict[str, float]:
     p = c["TP"] / max(1, c["TP"] + c["FP"])
     r = c["TP"] / max(1, c["TP"] + c["FN"])
-    return {"precision": p, "recall": r, "f1": 2 * p * r / max(1e-12, p + r)}
+    return {"precision": p, "recall": r,
+            "f1": 2 * p * r / max(1e-12, p + r)}
 
 
-def main(*, gold_threshold: int = 10) -> None:
-    cl = pq.read_table(PROC / "clusters.parquet").to_pandas()
-    rj = pq.read_table(PROC / "ebh_rejections.parquet").to_pandas()
+def load_method(method: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    if method == "leiden":
+        cl = pq.read_table(PROC / "clusters.parquet").to_pandas()
+    else:
+        cl = pq.read_table(PROC / f"clusters_{method}.parquet").to_pandas()
+    rj = pq.read_table(RES / f"fdr_rejections_{method}.parquet").to_pandas()
+    return cl, rj
 
-    rejected_cids = set(rj.loc[rj["rejected"], "cluster_id"].astype(int).tolist())
-    cl["predicted_coordinated"] = cl["cluster_id"].isin(rejected_cids)
-    cl["gold_coordinated"] = cl["template_size"] >= gold_threshold
 
-    print(f"corpus size: {len(cl):,} unique comments")
-    print(f"gold threshold: template_size >= {gold_threshold}")
-    print(f"  gold positive: {int(cl['gold_coordinated'].sum()):,} comments")
-    print(f"  predicted positive: {int(cl['predicted_coordinated'].sum()):,} comments")
+def evaluate_method(method: str, *, gold_thresholds: list[int],
+                    spot_check_n: int, rng: np.random.Generator) -> list[dict]:
+    cl, rj = load_method(method)
+    rejected_cids = set(rj.loc[rj["rejected_ebh"], "cluster_id"].astype(int).tolist())
+    cl["pred"] = cl["cluster_id"].isin(rejected_cids)
 
-    c_all = confusion(cl["gold_coordinated"].to_numpy(),
-                      cl["predicted_coordinated"].to_numpy())
-    m_all = metrics(c_all)
-    print("\nFull corpus (per-comment):")
-    print(f"  TP={c_all['TP']:,}  FP={c_all['FP']:,}  "
-          f"FN={c_all['FN']:,}  TN={c_all['TN']:,}")
-    print(f"  precision={m_all['precision']:.3f}  recall={m_all['recall']:.3f}  "
-          f"f1={m_all['f1']:.3f}")
+    rows = []
+    for gt in gold_thresholds:
+        cl["gold"] = cl["template_size"] >= gt
+        c = confusion(cl["gold"].to_numpy(), cl["pred"].to_numpy())
+        m = metrics(c)
+        rows.append({"method": method, "gold_threshold": gt,
+                     **c, **m})
 
-    # singleton-only regime: comments with template_size == 1
-    sg = cl[cl["template_size"] == 1].copy()
-    print(f"\nSingleton regime (template_size == 1): {len(sg):,} comments")
-    sg_pred = int(sg["predicted_coordinated"].sum())
-    print(f"  predicted coordinated among singletons: {sg_pred:,}")
-    print(f"  → these are the soft-coordination detections that template-counting misses")
+    # singleton soft-coordination
+    sing = cl[cl["template_size"] == 1]
+    n_sing = len(sing)
+    n_sing_pred = int(sing["pred"].sum())
+    rows.append({"method": method, "gold_threshold": -1,
+                 "TP": -1, "FP": -1, "FN": -1, "TN": -1,
+                 "precision": float("nan"), "recall": float("nan"),
+                 "f1": float("nan"),
+                 "singletons_total": n_sing,
+                 "singletons_predicted_coord": n_sing_pred})
 
-    # cluster-level summary
-    print("\nRejected cluster size distribution:")
-    rej_sizes = rj.loc[rj["rejected"], "n"]
-    if len(rej_sizes):
-        for q in [0.1, 0.5, 0.9]:
-            print(f"  size at quantile {q:.1f}: {int(rej_sizes.quantile(q))}")
-        print(f"  largest rejected cluster: {int(rej_sizes.max())}")
+    # spot-check sample of singleton-only clusters
+    sing_clusters = (sing.loc[sing["pred"]]
+                       .groupby("cluster_id").size()
+                       .sort_values(ascending=False))
+    if len(sing_clusters):
+        pick = sing_clusters.iloc[:min(len(sing_clusters), spot_check_n)]
+        spot_path = RES / f"spotcheck_{method}.csv"
+        spot_rows = []
+        for cid, sz in pick.items():
+            mems = sing[sing["cluster_id"] == cid]["row_id"].head(5).tolist()
+            spot_rows.append({"cluster_id": int(cid), "size": int(sz),
+                              "row_ids_sample": mems})
+        pd.DataFrame(spot_rows).to_csv(spot_path, index=False)
 
-    # save row-level predictions
-    out_path = RES / "predictions.parquet"
-    cl[["row_id", "comment_id", "template_size", "cluster_id",
-        "predicted_coordinated", "gold_coordinated"]].to_parquet(
-        out_path, compression="zstd", index=False)
-    print(f"\nwrote per-comment predictions to {out_path}")
+    return rows
+
+
+def main(*, methods: list[str], gold_thresholds: list[int],
+         spot_check_n: int, seed: int) -> None:
+    rng = np.random.default_rng(seed)
+    all_rows = []
+    for method in methods:
+        try:
+            all_rows.extend(evaluate_method(method, gold_thresholds=gold_thresholds,
+                                            spot_check_n=spot_check_n, rng=rng))
+        except FileNotFoundError as e:
+            print(f"  skip {method}: {e}")
+    out = pd.DataFrame(all_rows)
+    out.to_csv(RES / "eval_table.csv", index=False)
+    print(out.to_string(index=False))
+    print(f"\nwrote {RES/'eval_table.csv'}")
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--gold-threshold", type=int, default=10)
+    p.add_argument("--methods", nargs="+",
+                   default=["leiden", "connected_components",
+                            "hdbscan_emb", "minhash_lsh"])
+    p.add_argument("--gold-thresholds", nargs="+", type=int,
+                   default=[10, 100, 1000, 10000])
+    p.add_argument("--spot-check-n", type=int, default=20)
+    p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
-    main(gold_threshold=args.gold_threshold)
+    main(methods=args.methods, gold_thresholds=args.gold_thresholds,
+         spot_check_n=args.spot_check_n, seed=args.seed)

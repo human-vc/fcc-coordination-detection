@@ -14,3 +14,5 @@ tqdm>=4.66
 pyarrow>=17.0
 psycopg2-binary>=2.9
 faiss-cpu>=1.8
+datasketch>=1.6
+hdbscan>=0.8.40

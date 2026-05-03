@@ -33,20 +33,40 @@ fcc-coordination-detection/
 └── requirements.txt
 ```
 
-## Quick start
+## Pipeline
 
 ```bash
-# Setup
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+# 0. setup
+uv venv --python 3.12 && source .venv/bin/activate
+uv pip install -r requirements.txt
 
-# Ingest (assumes fcc.tar.gz already downloaded to data/raw/)
+# 1. ingest fcc.pgsql -> 8 parquet tables (~3 min)
 python src/ingest.py
 
-# Pilot: embed a 100K comment subsample and visualize similarity structure
-python src/embed.py --subsample 100000
-python src/graph.py --threshold 0.95
+# 2. embed all 3.8M unique comment texts with MiniLM (~4 min on A100)
+python src/embed.py --batch-size 4096
+
+# 3. deterministic A/B sample-split for the cross-half null
+python src/split.py
+
+# 4. kNN graph on the A-half (sample-split protects against double-dipping)
+python src/graph_singletons.py --k 50 --threshold 0.85
+
+# 5. Leiden clusters on A's graph
+python src/cluster_singletons.py --resolution 1.0 --min-cluster-size 5
+
+# 6. baselines: minhash+lsh, connected components, hdbscan
+python src/baselines.py
+
+# 7. for every method: e-values from B-half null, BH/BY/e-BH FDR
+python src/run_pipeline.py --alpha 0.10 --n-null-draws 5000
+
+# 8. evaluation table comparing methods at multiple gold thresholds
+python src/eval.py
 ```
+
+Outputs land in `results/`: `method_comparison.csv`, `eval_table.csv`, per-method
+e-values, rejections, and singleton spot-checks.
 
 ## References
 
