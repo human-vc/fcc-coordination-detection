@@ -1,0 +1,105 @@
+# spot-check for method=connected_components
+# 8 clusters across buckets [(5, 20), (20, 100), (100, 1000), (1000, 1000000)], 3 per bucket
+
+### bucket=5-20
+
+============================================================================
+cluster_id=516  n_members=9
+
+  --- singletons (9 in stratum, showing 2) ---
+    [tmpl=      1] 'There is one internet and all rules must apply to your home and mobile connections equally'
+    [tmpl=      1] 'There is only one internet and all rules must apply to your home and mobile connection'
+
+### bucket=5-20
+
+============================================================================
+cluster_id=389  n_members=19
+
+  --- singletons (19 in stratum, showing 2) ---
+    [tmpl=      1] 'Please dont let them pass this bill!'
+    [tmpl=      1] 'This bill shall not pass!'
+
+### bucket=5-20
+
+============================================================================
+cluster_id=573  n_members=14
+
+  --- singletons (9 in stratum, showing 2) ---
+    [tmpl=      1] '........*....'
+    [tmpl=      1] '.....*........'
+
+  --- small (2-10) (3 in stratum, showing 2) ---
+    [tmpl=      3] '.....*......'
+    [tmpl=      3] '......*.....'
+
+  --- medium (11-100) (2 in stratum, showing 2) ---
+    [tmpl=     11] '......*......'
+    [tmpl=     14] '....*....'
+
+### bucket=20-100
+
+============================================================================
+cluster_id=100  n_members=29
+
+  --- singletons (27 in stratum, showing 2) ---
+    [tmpl=      1] 'STOP Taking Away our rights. The US government already takes'
+    [tmpl=      1] 'stop selling our rights'
+
+  --- small (2-10) (2 in stratum, showing 2) ---
+    [tmpl=      2] "Don't take away the people's rights"
+    [tmpl=      3] 'Stop taking our rights away.'
+
+### bucket=20-100
+
+============================================================================
+cluster_id=79  n_members=21
+
+  --- singletons (18 in stratum, showing 2) ---
+    [tmpl=      1] 'I believe in a free, unfiltered internet.'
+    [tmpl=      1] 'I strongly believe in a free internet.'
+
+  --- small (2-10) (3 in stratum, showing 2) ---
+    [tmpl=      2] 'I believe in a free internet'
+    [tmpl=      2] 'I believe in a free and open internet'
+
+### bucket=20-100
+
+============================================================================
+cluster_id=7  n_members=23
+
+  --- singletons (21 in stratum, showing 2) ---
+    [tmpl=      1] '🙏'
+    [tmpl=      1] '🖕🏽🖕🏽🖕🏽🖕🏽'
+
+  --- small (2-10) (2 in stratum, showing 2) ---
+    [tmpl=      2] '❤️'
+    [tmpl=      3] '😡'
+
+### bucket=100-1000
+
+============================================================================
+cluster_id=385  n_members=255
+
+  --- singletons (246 in stratum, showing 2) ---
+    [tmpl=      1] 'To whom it may concern:\nI would like my video comment at the following URL to be considered for the record.\n\nhttp://video.battleforthenet.com/player/#/6c0f948674441f5404f7787c91ab2b02\n\nThank you.\nRichard Coit'
+    [tmpl=      1] 'To whom it may concern:\nI would like my video comment at the following URL to be considered for the record.\n\nhttp://video.battleforthenet.com/player/#/e23fe27fbebcfae1b09676b7760e482f\n\nThank you.\nClaudette Hayle'
+
+  --- small (2-10) (9 in stratum, showing 2) ---
+    [tmpl=      5] 'To whom it may concern:\nI would like my video comment at the following URL to be considered for the record.\n\nhttp://video.battleforthenet.com/player/#/c9a19914e3f0402bfa2bb9bcb56be0a7\n\nThank you.\nGrant Forbes'
+    [tmpl=      6] 'To whom it may concern:\nI would like my video comment at the following URL to be considered for the record.\n\nhttp://video.battleforthenet.com/player/#/37e5a8a09a0c31ab4fa00d11b6f3953f\n\nThank you.\ndonny shaw'
+
+### bucket=100-1000
+
+============================================================================
+cluster_id=3625  n_members=508
+
+  --- singletons (1 in stratum, showing 1) ---
+    [tmpl=      1] "Hello, I'm Josefina Ryan. Net neutrality is shit because without it our ISPs will spy on us!"
+
+  --- small (2-10) (502 in stratum, showing 2) ---
+    [tmpl=      3] "Hello, I'm Vesta Tromp. Net neutrality is shit because without it our ISPs will spy on us!"
+    [tmpl=      3] "Hello, I'm Israel Runolfsdottir. Net neutrality is shit because without it our ISPs will spy on us!"
+
+  --- large (101+) (5 in stratum, showing 2) ---
+    [tmpl=    186] "Hello, I'm Gail Gutmann. Net neutrality is shit because without it our ISPs will spy on us!"
+    [tmpl=    185] "Hello, I'm Frederick Dare. Net neutrality is shit because without it our ISPs will spy on us!"

@@ -1,0 +1,177 @@
+# spot-check for method=hdbscan_emb
+# 12 clusters across buckets [(5, 20), (20, 100), (100, 1000), (1000, 1000000)], 3 per bucket
+
+### bucket=5-20
+
+============================================================================
+cluster_id=313  n_members=9
+
+  --- singletons (1 in stratum, showing 1) ---
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+  --- small (2-10) (8 in stratum, showing 2) ---
+    [tmpl=      2] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      3] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+### bucket=5-20
+
+============================================================================
+cluster_id=271  n_members=12
+
+  --- singletons (5 in stratum, showing 2) ---
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+  --- small (2-10) (7 in stratum, showing 2) ---
+    [tmpl=      2] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      2] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+### bucket=5-20
+
+============================================================================
+cluster_id=395  n_members=7
+
+  --- singletons (6 in stratum, showing 2) ---
+    [tmpl=      1] 'I support Title 2 oversight of ISPs and I support net neutrality. I also support title 2 oversight of Internet Service Providers (ISPs)'
+    [tmpl=      1] 'I support Title 2 oversight of Internet Service Providers (ISPs). I also strongly support Net Neutrality.'
+
+  --- small (2-10) (1 in stratum, showing 1) ---
+    [tmpl=      6] 'I support Title 2 oversight of Internet Service Providers (ISPs). I support net neutrality.'
+
+### bucket=20-100
+
+============================================================================
+cluster_id=10  n_members=81
+
+  --- singletons (76 in stratum, showing 2) ---
+    [tmpl=      1] 'Chairman Pai’s proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\n\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\n\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platform, ...'
+    [tmpl=      1] 'Chairman Pai’s proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\n\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\n\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platform, ...'
+
+  --- small (2-10) (5 in stratum, showing 2) ---
+    [tmpl=      3] 'Chairman Pai’s proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\n\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\n\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platform, ...'
+    [tmpl=      2] 'Chairman Pai’s proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\n\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\n\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platform, ...'
+
+### bucket=20-100
+
+============================================================================
+cluster_id=18  n_members=53
+
+  --- singletons (1 in stratum, showing 1) ---
+    [tmpl=      1] "Hello, I'm Josefina Ryan. Net neutrality is shit because without it our ISPs will spy on us!"
+
+  --- small (2-10) (51 in stratum, showing 2) ---
+    [tmpl=      3] "Hello, I'm Lisandro Halvorson. Net neutrality is shit because without it our ISPs will spy on us!"
+    [tmpl=      4] "Hello, I'm Kendrick Lynch. Net neutrality is shit because our ISPs will spy on us!"
+
+  --- large (101+) (1 in stratum, showing 1) ---
+    [tmpl=    186] "Hello, I'm Gail Gutmann. Net neutrality is shit because without it our ISPs will spy on us!"
+
+### bucket=20-100
+
+============================================================================
+cluster_id=11  n_members=67
+
+  --- singletons (57 in stratum, showing 2) ---
+    [tmpl=      1] "Chairman Pai's proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\r\n\r\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\r\n\r\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platfo..."
+    [tmpl=      1] "Chairman Pai's proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\r\n\r\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\r\n\r\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platfo..."
+
+  --- small (2-10) (10 in stratum, showing 2) ---
+    [tmpl=      2] "Chairman Pai's proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\r\n\r\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\r\n\r\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platfo..."
+    [tmpl=      2] "Chairman Pai's proposed plan to repeal net neutrality protections would put a huge burden on microbusinesses like mine.\r\n\r\nAs an Etsy seller, net neutrality is essential to the success of my business and my ability to care for myself and my family. The FCC needs to ensure equal opportunities for microbusinesses to compete with larger and more established brands by upholding net neutrality protections.\r\n\r\nEtsy has opened the door for me and 1.8 million other sellers to turn our passion into a business by connecting us to a global market of buyers. For 32% of creative entrepreneurs on the platfo..."
+
+### bucket=100-1000
+
+============================================================================
+cluster_id=87  n_members=101
+
+  --- singletons (97 in stratum, showing 2) ---
+    [tmpl=      1] "The FCC's Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nToday's net neutrality rules require internet service providers, such as cable companies and other broadband providers, to treat all online traffic equally and allow users to visit any website and access any kind of content they want, whenever they want. Net neutrality rules have been working and these consumer protections should not be rolled back.\\\r\\\n\\\r\\\nPreserving strong, enforceable net neutrality rules is fundamental to a free and open internet, and I urge you to protect ..."
+    [tmpl=      1] "The FCC's Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nToday's net neutrality rules require internet service providers, such as cable companies and other broadband providers, to treat all online traffic equally and allow users to visit any website and access any kind of content they want, whenever they want. Net neutrality rules have been working and these consumer protections should not be rolled back.\\\r\\\n\\\r\\\nPreserving strong, enforceable net neutrality rules is fundamental to a free and open internet, and I urge you to protect ..."
+
+  --- small (2-10) (4 in stratum, showing 2) ---
+    [tmpl=      3] "The FCC's Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nToday's net neutrality rules require internet service providers, such as cable companies and other broadband providers, to treat all online traffic equally and allow users to visit any website and access any kind of content they want, whenever they want. Net neutrality rules have been working and these consumer protections should not be rolled back.\\\r\\\n\\\r\\\nPreserving strong, enforceable net neutrality rules is fundamental to a free and open internet, and I urge you to protect ..."
+    [tmpl=      3] "The FCC's Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nToday's net neutrality rules require internet service providers, such as cable companies and other broadband providers, to treat all online traffic equally and allow users to visit any website and access any kind of content they want, whenever they want. Net neutrality rules have been working and these consumer protections should not be rolled back.\\\r\\\n\\\r\\\nPreserving strong, enforceable net neutrality rules is fundamental to a free and open internet, and I urge you to protect ..."
+
+### bucket=100-1000
+
+============================================================================
+cluster_id=79  n_members=215
+
+  --- singletons (166 in stratum, showing 2) ---
+    [tmpl=      1] 'The FCC Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\r\n\r\nMost Americans only have one choice for true high speed Internet access: our local cable company. Cable companies (and wireless carriers) are actively lobbying Congress and the FCC for the power to:\r\n\r\n* Block sites and apps, to charge them "access fees"\r\n* Slow sites and apps to a crawl, to establish paid "fast lanes" (normal speed) and slow lanes (artificially low speeds)\r\n* Impose arbitrarily low data caps, so they can charge sites to escape those caps, or privilege their own ser...'
+    [tmpl=      1] 'The FCC Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\r\n\r\nMost Americans only have one choice for true high speed Internet access: our local cable company. Cable companies (and wireless carriers) are actively lobbying Congress and the FCC for the power to:\r\n\r\n* Block sites and apps, to charge them "access fees"\r\n* Slow sites and apps to a crawl, to establish paid "fast lanes" (normal speed) and slow lanes (artificially low speeds)\r\n* Impose arbitrarily low data caps, so they can charge sites to escape those caps, or privilege their own ser...'
+
+  --- small (2-10) (49 in stratum, showing 2) ---
+    [tmpl=      2] 'The FCC Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\r\n\r\n  Most Americans only have one choice for true high speed Internet access: our local cable company. Cable companies (and wireless carriers) are actively lobbying Congress and the FCC for the power to:\r\n\r\n  * Block sites and apps, to charge them "access fees"\r\n  * Slow sites and apps to a crawl, to establish paid "fast lanes" (normal speed) and slow lanes (artificially low speeds)\r\n  * Impose arbitrarily low data caps, so they can charge sites to escape those caps, or privilege their...'
+    [tmpl=      2] 'The FCC Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\r\n\r\nMost Americans only have one choice for true high speed Internet access: our local cable company. Cable companies (and wireless carriers) are actively lobbying Congress and the FCC for the power to:\r\n\r\n* Block sites and apps, to charge them "access fees"\r\n* Slow sites and apps to a crawl, to establish paid "fast lanes" (normal speed) and slow lanes (artificially low speeds)\r\n* Impose arbitrarily low data caps, so they can charge sites to escape those caps, or privilege their own ser...'
+
+### bucket=100-1000
+
+============================================================================
+cluster_id=163  n_members=669
+
+  --- singletons (663 in stratum, showing 2) ---
+    [tmpl=      1] 'As an Internet user, I’m asking the FCC to protect the net neutrality protections currently in place. \r\n\r\nThe FCC should reject Chairman Ajit Pai’s proposal to give the government-subsidized ISP monopolies like Verizon, AT&T, and Comcast the authority to engage in data discrimination, stripping users of the necessary privacy and access rules we fought for and just recently won. \r\n\r\nI’m worried about creating a tiered Internet with “fast lanes” for certain sites or services because users will have fewer options and a less diverse Internet. Thankfully, the current FCC regulations mean that ISP m...'
+    [tmpl=      1] 'We need the FCC to defend the rights of millions of Internet users by upholding net neutrality protections. \r\n\r\nThe FCC should throw out Chairman Ajit Pai’s proposal to give the telecom giants like Verizon, Comcast, and AT&T free rein to engage in data discrimination, stripping Internet users of the meaningful access and privacy rules we fought for and just recently won. \r\n\r\nI’m worried about creating a tiered Internet with “fast lanes” for certain sites or services because ISPs could have too much power to determine what I can do online. Thankfully, the current Open Internet rules ensure that...'
+
+  --- small (2-10) (6 in stratum, showing 2) ---
+    [tmpl=      3] 'I’m calling on the FCC to stand up for net neutrality and safeguard Title II protections. \r\n\r\nThe FCC should throw out Chairman Ajit Pai’s proposal to hand the government-subsidized telecom giants like Comcast, AT&T, and Verizon the legal cover to engage in data discrimination, stripping Internet users of the vital access and privacy protections we fought for and just recently won. \r\n\r\nI’m worried about creating a tiered Internet with “fast lanes” for certain sites or services because ISPs could have too much power to determine what I can do online. Thankfully, the existing net neutrality rule...'
+    [tmpl=      2] 'The FCC should safeguard Internet freedom by keeping the bright-line net neutrality protections in place and upholding Title II. \r\n\r\nThe FCC should throw out Chairman Ajit Pai’s proposal to hand the ISP monopolies like Comcast, Verizon, and AT&T the authority to engage in data discrimination, stripping consumers of the meaningful privacy and access safeguards we demanded and just recently won. \r\n\r\nI’m worried about creating a tiered Internet with “fast lanes” for certain sites or services because users will have fewer options and a less diverse Internet. Thankfully, the current FCC regulations...'
+
+### bucket=1000-1000000
+
+============================================================================
+cluster_id=118  n_members=22047
+
+  --- singletons (15530 in stratum, showing 2) ---
+    [tmpl=      1] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+    [tmpl=      1] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+
+  --- small (2-10) (6421 in stratum, showing 2) ---
+    [tmpl=      4] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+    [tmpl=      3] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+
+  --- medium (11-100) (93 in stratum, showing 2) ---
+    [tmpl=     36] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+    [tmpl=     30] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+
+  --- large (101+) (3 in stratum, showing 2) ---
+    [tmpl=    153] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+    [tmpl=    146] 'I urge you to stop the FCC\'s plan to end net neutrality *before* the FCC\'s December 14th vote.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest, or force me to buy special "tiers" to access the sites and services I choose. But that\'s exactly what the FCC plan would do. Please read it:\n\nhttps://apps.fcc.gov/edocs_public/attachmatch/DOC-347927A1.pdf\n\nBlocking & throttling by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocke...'
+
+### bucket=1000-1000000
+
+============================================================================
+cluster_id=143  n_members=17636
+
+  --- singletons (15162 in stratum, showing 2) ---
+    [tmpl=      1] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\n\nNow is not the time to let giant ISPs censor what we see and do online.\n\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will introduce fast lan...'
+    [tmpl=      1] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\n\nNow is not the time to let giant ISPs censor what we see and do online.\n\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will introduce fast lan...'
+
+  --- small (2-10) (2447 in stratum, showing 2) ---
+    [tmpl=      2] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\n\nNow is not the time to let giant ISPs censor what we see and do online.\n\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will introduce fast lan...'
+    [tmpl=      3] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\n\nNow is not the time to let giant ISPs censor what we see and do online.\n\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will introduce fast lan...'
+
+  --- medium (11-100) (26 in stratum, showing 2) ---
+    [tmpl=     54] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\n\nNow is not the time to let giant ISPs censor what we see and do online.\n\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will introduce fast lan...'
+    [tmpl=     36] "The FCC's Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.I don't want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into 'fast lanes' for companies that pay and 'slow lanes' for the rest.Now is not the time to let giant ISPs censor what we see and do online.Censorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will introduce fast lanes for..."
+
+  --- large (101+) (1 in stratum, showing 1) ---
+    [tmpl=    111] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\n\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\n\nNow is not the time to let giant ISPs censor what we see and do online.\n\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will introduce fast lan...'
+
+### bucket=1000-1000000
+
+============================================================================
+cluster_id=129  n_members=4059
+
+  --- singletons (3525 in stratum, showing 2) ---
+    [tmpl=      1] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\\\r\\\n\\\r\\\nNow is not the time to let giant ISPs censor what we see and do online.\\\r\\\n\\\r\\\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will ...'
+    [tmpl=      1] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\\\r\\\n\\\r\\\nNow is not the time to let giant ISPs censor what we see and do online.\\\r\\\n\\\r\\\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will ...'
+
+  --- small (2-10) (530 in stratum, showing 2) ---
+    [tmpl=      4] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\\\r\\\n\\\r\\\nNow is not the time to let giant ISPs censor what we see and do online.\\\r\\\n\\\r\\\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will ...'
+    [tmpl=      3] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\\\r\\\n\\\r\\\nNow is not the time to let giant ISPs censor what we see and do online.\\\r\\\n\\\r\\\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will ...'
+
+  --- medium (11-100) (4 in stratum, showing 2) ---
+    [tmpl=     17] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\\\r\\\n\\\r\\\nNow is not the time to let giant ISPs censor what we see and do online.\\\r\\\n\\\r\\\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will ...'
+    [tmpl=     19] 'The FCC\'s Open Internet Rules (net neutrality rules) are extremely important to me. I urge you to protect them.\\\r\\\n\\\r\\\nI don\'t want ISPs to have the power to block websites, slow them down, give some sites an advantage over others, or split the Internet into "fast lanes" for companies that pay and "slow lanes" for the rest.\\\r\\\n\\\r\\\nNow is not the time to let giant ISPs censor what we see and do online.\\\r\\\n\\\r\\\nCensorship by ISPs is a serious problem. Comcast has throttled Netflix, AT&T blocked FaceTime, Time Warner Cable throttled the popular game League of Legends, and Verizon admitted it will ...'

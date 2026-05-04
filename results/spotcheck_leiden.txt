@@ -1,0 +1,82 @@
+# spot-check for method=leiden
+# 6 clusters across buckets [(5, 20), (20, 100), (100, 1000), (1000, 1000000)], 3 per bucket
+
+### bucket=5-20
+
+============================================================================
+cluster_id=14468  n_members=8
+
+  --- singletons (7 in stratum, showing 2) ---
+    [tmpl=      1] "Chairman Pai:  I'm very worried about net neutrality and Title II. I strongly urge Chairman Pai to rescind The Obama/Wheeler decision to regulate Internet access. Internet users, as opposed to Washington, should be able to enjoy the services they choose. The Obama/Wheeler decision to regulate Internet access is a distortion of the open Internet. It disrupted a free-market approach that functioned remarkably well for two decades with Republican and Democrat support."
+    [tmpl=      1] 'Dear Chairman Pai,  I am a voter worried about Net Neutrality and Title II. I strongly encourage Chairman Pai to reverse The Obama/Wheeler plan to take over Internet access. Individuals, rather than big government, should enjoy which services we choose. The Obama/Wheeler plan to take over Internet access is a perversion of the open Internet. It broke a market-based framework that performed fabulously well for a long time with nearly universal consensus.'
+
+  --- small (2-10) (1 in stratum, showing 1) ---
+    [tmpl=      2] 'Dear Chairman Pai,  I am a voter worried about Net Neutrality and Title II. I strongly advocate Chairman Pai to repeal The Obama/Wheeler order to regulate Internet access. Individual citizens, not Washington, should be free to select whichever services they choose. The Obama/Wheeler order to regulate Internet access is a corruption of the open Internet. It broke a pro-consumer framework that worked fabulously successfully for two decades with broad bipartisan support.'
+
+### bucket=5-20
+
+============================================================================
+cluster_id=11994  n_members=8
+
+  --- singletons (6 in stratum, showing 2) ---
+    [tmpl=      1] 'I strongly believe in preserving net neutrality and title 2.'
+    [tmpl=      1] 'I strongly support preserving Net Neutrality under Title 2.'
+
+  --- small (2-10) (2 in stratum, showing 2) ---
+    [tmpl=      2] 'I feel strongly about preserving net neutrality and title 2.'
+    [tmpl=      2] 'I strongly believe in preserving net neutrality and Title 2.'
+
+### bucket=5-20
+
+============================================================================
+cluster_id=31121  n_members=6
+
+  --- singletons (6 in stratum, showing 2) ---
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+### bucket=20-100
+
+============================================================================
+cluster_id=32  n_members=54
+
+  --- singletons (28 in stratum, showing 2) ---
+    [tmpl=      1] 'I specifically support STRONG net neutrality backed by Title 2 oversight of ISP’s.'
+    [tmpl=      1] "I specifically support strong net neutrality backed by title 2 oversight  of ISP's."
+
+  --- small (2-10) (20 in stratum, showing 2) ---
+    [tmpl=      3] "I specifically support strong net neutrality backed by Title 2  oversight of ISP's."
+    [tmpl=      2] "I specifically support  strong net neutrality backed by title 2 oversight of ISP's."
+
+  --- medium (11-100) (5 in stratum, showing 2) ---
+    [tmpl=     30] 'I specifically support strong net neutrality backed by title 2 oversight of ISP.'
+    [tmpl=     58] "I specifically support strong net neutrality backed by title 2 oversight of isp's."
+
+  --- large (101+) (1 in stratum, showing 1) ---
+    [tmpl=    354] "I specifically support strong net neutrality backed by title 2 oversight of ISP's."
+
+### bucket=20-100
+
+============================================================================
+cluster_id=146  n_members=50
+
+  --- singletons (20 in stratum, showing 2) ---
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+  --- small (2-10) (30 in stratum, showing 2) ---
+    [tmpl=      3] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      2] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+### bucket=20-100
+
+============================================================================
+cluster_id=79  n_members=52
+
+  --- singletons (27 in stratum, showing 2) ---
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      1] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+
+  --- small (2-10) (25 in stratum, showing 2) ---
+    [tmpl=      2] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
+    [tmpl=      3] "As an Internet user, I'm asking the FCC to protect the net neutrality protections currently in place. \n\nThe FCC should throw out Chairman Ajit Pai's proposal to give the ISP monopolies like Comcast, AT&T, and Verizon the authority to create Internet fast lanes, stripping Internet users of the meaningful access and privacy protections we fought for and just recently won. \n\nI'm concerned about ISPs being allowed to discriminate against certain types of data or websites, because users will have fewer options and a less diverse Internet. Thankfully, the current net neutrality rules ensure that Int..."
