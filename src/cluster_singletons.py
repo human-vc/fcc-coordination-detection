@@ -23,7 +23,8 @@ OUT_PATH = PROC / "clusters.parquet"
 
 
 def main(*, resolution: float = 0.90, min_cluster_size: int = 5,
-         partition: str = "cpm", out_path: Path | None = None) -> None:
+         partition: str = "cpm", out_path: Path | None = None,
+         n_iterations: int = -1) -> None:
     """Run Leiden community detection on the kNN similarity graph.
 
     partition='cpm' uses Constant Potts Model (resolution-limit-free; resolution
@@ -76,7 +77,7 @@ def main(*, resolution: float = 0.90, min_cluster_size: int = 5,
     parts = la.find_partition(
         g, partition_cls,
         weights="weight", resolution_parameter=resolution,
-        n_iterations=-1, seed=42,
+        n_iterations=n_iterations, seed=42,
     )
     membership = np.asarray(parts.membership, dtype=np.int64)
     n_clusters = int(membership.max() + 1) if len(membership) else 0
@@ -110,6 +111,9 @@ if __name__ == "__main__":
                    help="cpm = Constant Potts (resolution-limit-free); rb = RBConfiguration")
     p.add_argument("--min-cluster-size", type=int, default=5)
     p.add_argument("--out-path", type=Path, default=None)
+    p.add_argument("--n-iterations", type=int, default=-1,
+                   help="-1 = until convergence (slow); 2 = fast (slight quality cost)")
     args = p.parse_args()
     main(resolution=args.resolution, partition=args.partition,
-         min_cluster_size=args.min_cluster_size, out_path=args.out_path)
+         min_cluster_size=args.min_cluster_size, out_path=args.out_path,
+         n_iterations=args.n_iterations)
