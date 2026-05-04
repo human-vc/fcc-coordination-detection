@@ -31,7 +31,7 @@ def run(cmd: list[str]) -> None:
 
 
 def main(*, resolutions: list[float], alpha: float, n_null_draws: int,
-         min_cluster_size: int, partition: str) -> None:
+         min_cluster_size: int, partition: str, n_iterations: int = 2) -> None:
     summary = []
     for r in resolutions:
         tag = f"leiden_r{r}"
@@ -45,6 +45,7 @@ def main(*, resolutions: list[float], alpha: float, n_null_draws: int,
              "--resolution", str(r),
              "--partition", partition,
              "--min-cluster-size", str(min_cluster_size),
+             "--n-iterations", str(n_iterations),
              "--out-path", str(clust_out)])
         run([PY, str(ROOT / "src" / "evalues.py"),
              "--n-null-draws", str(n_null_draws),
@@ -98,7 +99,10 @@ if __name__ == "__main__":
     p.add_argument("--alpha", type=float, default=0.10)
     p.add_argument("--n-null-draws", type=int, default=5_000)
     p.add_argument("--min-cluster-size", type=int, default=5)
+    p.add_argument("--n-iterations", type=int, default=2,
+                   help="Leiden iterations per resolution (2=fast, -1=converge)")
     args = p.parse_args()
     main(resolutions=args.resolutions, partition=args.partition,
          alpha=args.alpha, n_null_draws=args.n_null_draws,
-         min_cluster_size=args.min_cluster_size)
+         min_cluster_size=args.min_cluster_size,
+         n_iterations=args.n_iterations)
