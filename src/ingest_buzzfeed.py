@@ -38,12 +38,43 @@ from pathlib import Path
 
 import pandas as pd
 import pyarrow as pa
+import pyarrow.csv as pa_csv
 import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "buzzfeed"
 PROC = ROOT / "data" / "processed"
 PROC.mkdir(parents=True, exist_ok=True)
+
+
+def stream_csv_to_parquet(csv_path: Path, out_path: Path) -> int:
+    """Stream a large CSV to Parquet without loading it all in RAM."""
+    read_opts = pa_csv.ReadOptions(block_size=64 * 1024 * 1024)  # 64 MB blocks
+    parse_opts = pa_csv.ParseOptions(quote_char='"', escape_char=None,
+                                      newlines_in_values=True)
+    convert_opts = pa_csv.ConvertOptions(
+        # force everything as string; we'll cast downstream as needed
+        strings_can_be_null=True, null_values=[""],
+    )
+    writer = None
+    n_rows = 0
+    with pa_csv.open_csv(csv_path, read_options=read_opts,
+                         parse_options=parse_opts,
+                         convert_options=convert_opts) as reader:
+        for batch in reader:
+            # cast all to string for stable schema
+            cols = {f.name: batch.column(f.name).cast(pa.string())
+                    for f in batch.schema}
+            tbl = pa.table(cols)
+            if writer is None:
+                writer = pq.ParquetWriter(out_path, tbl.schema, compression="zstd")
+            writer.write_table(tbl)
+            n_rows += tbl.num_rows
+            if n_rows % 1_000_000 < tbl.num_rows:
+                print(f"  ...{n_rows:,} rows written")
+    if writer is not None:
+        writer.close()
+    return n_rows
 
 
 def main() -> None:
@@ -57,17 +88,15 @@ def main() -> None:
         with zipfile.ZipFile(zip_path) as z:
             z.extractall(RAW)
 
-    print(f"reading {csv_path}...")
-    # full schema per BuzzFeed README:
-    # date, comments, name_and_location, email_address,
-    # email_address_nonstandard, email_domain, file, uploader
-    df = pd.read_csv(csv_path, low_memory=False, dtype=str)
-    print(f"loaded {len(df):,} rows; columns: {list(df.columns)}")
-
-    # write parquet
     out_main = PROC / "buzzfeed_bulk_uploads.parquet"
-    df.to_parquet(out_main, compression="zstd", index=False)
-    print(f"wrote {out_main}  ({out_main.stat().st_size/1e6:.1f} MB)")
+    print(f"streaming {csv_path} -> {out_main}...")
+    n = stream_csv_to_parquet(csv_path, out_main)
+    print(f"wrote {out_main}  ({n:,} rows; {out_main.stat().st_size/1e6:.1f} MB)")
+
+    # for downstream stats, read just the columns we need
+    print("\nreading uploader+domain columns for volume stats...")
+    df = pq.read_table(out_main, columns=["uploader"]).to_pandas()
+    print(f"  {len(df):,} rows in memory ({df.memory_usage(deep=True).sum()/1e6:.0f} MB)")
 
     # uploader volume rank
     vol = df.groupby("uploader", dropna=False).size().reset_index(name="n_comments")
@@ -77,19 +106,42 @@ def main() -> None:
     vol.to_parquet(out_vol, compression="zstd", index=False)
     print(f"wrote {out_vol}")
 
-    # rough attribution by NY AG-published volumes
-    # Fluent ~7.7M, React2Media ~329K, Opt-Intelligence ~250K
-    # Anything in top-10 by volume is presumptively a named contractor;
-    # we tag with NY-AG-likely-attribution and let the eval bind precise IDs.
-    AG_LABELS = {
-        # rank → likely organization (NY AG report 2021)
-        1: "Fluent (likely)",
-        2: "React2Media or Opt-Intelligence (likely)",
-        3: "React2Media or Opt-Intelligence (likely)",
-        4: "Media Bridge LLC (likely)",
+    # The `uploader` column is the plaintext email of the Box.com account,
+    # so we can attribute directly by domain match instead of guessing by rank.
+    # Categorization of the top accounts:
+    #   ASTROTURF (NY AG-named or strongly-suggested fake):
+    #     - shane@mediabridgellc.com  -> Media Bridge LLC (NY AG 2021 explicit)
+    #     - esmisc@mac.com            -> likely Fluent (4.3M volume matches NY AG ~7.7M Fluent)
+    #     - fccfreedom@hmamail.com    -> anonymous (HideMyAss) email; astroturf signal
+    #   LEGITIMATE ADVOCACY (public organizations mobilizing supporters):
+    #     - mike@fightforthefuture.org, karen@momsrising.org, dutch@freepress.net,
+    #       kurt@demandprogress.org, advocacy@mozilla.com, action@aclu.org,
+    #       meaghan@mandatemedia.com, david@openmedia.org, info@mpowerchange.org,
+    #       eve@revolutionmessaging.com
+    UPLOADER_LABELS: dict[str, str] = {
+        "shane@mediabridgellc.com":     "astroturf:Media Bridge LLC (NY AG)",
+        "esmisc@mac.com":                "astroturf:likely Fluent",
+        "fccfreedom@hmamail.com":        "astroturf:anonymous (HMA)",
+        "mike@fightforthefuture.org":    "advocacy:Fight for the Future",
+        "karen@momsrising.org":          "advocacy:MomsRising",
+        "dutch@freepress.net":           "advocacy:Free Press",
+        "kurt@demandprogress.org":       "advocacy:Demand Progress",
+        "advocacy@mozilla.com":          "advocacy:Mozilla",
+        "action@aclu.org":                "advocacy:ACLU",
+        "meaghan@mandatemedia.com":      "advocacy:Mandate Media (agency)",
+        "david@openmedia.org":            "advocacy:OpenMedia",
+        "info@mpowerchange.org":          "advocacy:MPower Change",
+        "eve@revolutionmessaging.com":    "advocacy:Revolution Messaging",
+        "wyden@mandatemedia.com":         "advocacy:Sen. Wyden / Mandate Media",
+        "tom@cashmusic.org":              "advocacy:CASH Music",
+        "tom+netneutrality@cashmusic.org": "advocacy:CASH Music",
+        "ncatalano@ofa.us":               "advocacy:Organizing for Action",
+        "info@betheimpakt.com":           "advocacy:Be The Impakt",
     }
-    vol["ag_attribution"] = vol["rank"].map(AG_LABELS).fillna("")
-    vol[["uploader", "rank", "n_comments", "ag_attribution"]].to_parquet(
+    vol["ag_attribution"] = vol["uploader"].map(UPLOADER_LABELS).fillna("")
+    vol["category"] = vol["ag_attribution"].apply(
+        lambda s: s.split(":", 1)[0] if s else "")
+    vol[["uploader", "rank", "n_comments", "ag_attribution", "category"]].to_parquet(
         PROC / "buzzfeed_attribution.parquet", compression="zstd", index=False
     )
 
@@ -97,6 +149,13 @@ def main() -> None:
     print(vol.head(20).to_string(index=False))
     print(f"\nTotal uploaders: {len(vol):,}")
     print(f"Top 10 uploaders share: {vol.head(10)['n_comments'].sum() / vol['n_comments'].sum():.1%}")
+
+    print("\nCategory breakdown (by comments):")
+    by_cat = vol.groupby("category")["n_comments"].sum().sort_values(ascending=False)
+    total = vol["n_comments"].sum()
+    for cat, n in by_cat.items():
+        cat_label = cat or "unlabeled"
+        print(f"  {cat_label:14s} {n:>10,}  ({100*n/total:.1f}%)")
 
 
 if __name__ == "__main__":

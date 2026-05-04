@@ -59,6 +59,11 @@ def main(*, top_n_uploaders: int = 10,
                    .agg(lambda s: s.value_counts().index[0]))
     print(f"  {len(bf_lookup):,} unique text hashes -> uploader mapping")
 
+    # rich attribution labels from ingest_buzzfeed.py
+    attr = pq.read_table(PROC / "buzzfeed_attribution.parquet").to_pandas()
+    uploader_to_label = dict(zip(attr["uploader"], attr["ag_attribution"]))
+    uploader_to_cat = dict(zip(attr["uploader"], attr["category"]))
+
     print(f"loading slnader comments ({sl_comments})...")
     sl = pq.read_table(sl_comments, columns=["comment_id", "comment_text"]).to_pandas()
     print(f"  {len(sl):,} unique slnader comments")
@@ -67,17 +72,16 @@ def main(*, top_n_uploaders: int = 10,
     matched = sl["uploader"].notna().sum()
     print(f"  matched {matched:,} ({100*matched/len(sl):.1f}%) to a BuzzFeed uploader")
 
-    sl[["comment_id", "uploader"]].to_parquet(
+    sl["category"] = sl["uploader"].map(uploader_to_cat).fillna("")
+    sl["label"] = sl["uploader"].map(uploader_to_label).fillna("")
+    sl[["comment_id", "uploader", "category", "label"]].to_parquet(
         PROC / "comment_uploader.parquet", compression="zstd", index=False
     )
 
-    # uploader volume + ranking
-    vol = (sl.dropna(subset=["uploader"])
-             .groupby("uploader").size().sort_values(ascending=False))
-    top_set = set(vol.head(top_n_uploaders).index)
-    print(f"\nTop {top_n_uploaders} uploaders by matched-volume:")
-    for r, (u, n) in enumerate(vol.head(top_n_uploaders).items(), 1):
-        print(f"  rank {r:2d}: {u}  matches={n:>10,}")
+    print("\nMatch breakdown by category:")
+    for cat, n in sl["category"].value_counts().items():
+        label = cat or "unmatched"
+        print(f"  {label:14s} {n:>10,}  ({100*n/len(sl):.1f}%)")
 
     # per-cluster attribution
     print(f"\nloading clusters from {cluster_path}...")
@@ -86,30 +90,41 @@ def main(*, top_n_uploaders: int = 10,
     rejected_cids = set(rj.loc[rj["rejected_ebh"], "cluster_id"].astype(int))
     cl_in_rejected = cl[cl["cluster_id"].isin(rejected_cids)].copy()
     cl_in_rejected = cl_in_rejected.merge(
-        sl[["comment_id", "uploader"]], on="comment_id", how="left"
+        sl[["comment_id", "uploader", "category", "label"]],
+        on="comment_id", how="left"
     )
 
     rows = []
     for cid, group in cl_in_rejected.groupby("cluster_id"):
         n = len(group)
         n_matched = group["uploader"].notna().sum()
-        n_top = group["uploader"].isin(top_set).sum()
+        n_astroturf = (group["category"] == "astroturf").sum()
+        n_advocacy = (group["category"] == "advocacy").sum()
+        # most common labeled uploader in the cluster
+        labeled = group.loc[group["label"] != "", "label"]
+        top_label = labeled.value_counts().index[0] if len(labeled) else ""
         rows.append({
             "cluster_id": int(cid),
             "n_members": n,
             "n_matched_buzzfeed": int(n_matched),
             "frac_matched_buzzfeed": float(n_matched / n) if n else 0.0,
-            "n_top_uploader": int(n_top),
-            "frac_top_uploader": float(n_top / n) if n else 0.0,
+            "n_astroturf": int(n_astroturf),
+            "frac_astroturf": float(n_astroturf / n) if n else 0.0,
+            "n_advocacy": int(n_advocacy),
+            "frac_advocacy": float(n_advocacy / n) if n else 0.0,
+            "top_label": top_label,
         })
-    out = pd.DataFrame(rows).sort_values("frac_top_uploader", ascending=False)
+    out = pd.DataFrame(rows).sort_values("frac_astroturf", ascending=False)
     out.to_csv(RES / "attribution_table.csv", index=False)
 
     print(f"\nrejected clusters analyzed: {len(out):,}")
     print(f"  avg frac matched to BuzzFeed: {out['frac_matched_buzzfeed'].mean():.3f}")
-    print(f"  avg frac top-{top_n_uploaders} uploader: {out['frac_top_uploader'].mean():.3f}")
-    print(f"  clusters with frac_top_uploader >= 0.5: "
-          f"{(out['frac_top_uploader'] >= 0.5).sum():,}")
+    print(f"  avg frac astroturf:           {out['frac_astroturf'].mean():.3f}")
+    print(f"  avg frac advocacy:            {out['frac_advocacy'].mean():.3f}")
+    print(f"  clusters >=50% astroturf:     {(out['frac_astroturf'] >= 0.5).sum():,}")
+    print(f"  clusters >=50% advocacy:      {(out['frac_advocacy'] >= 0.5).sum():,}")
+    print(f"  clusters >=50% any matched:   "
+          f"{(out['frac_matched_buzzfeed'] >= 0.5).sum():,}")
     print(f"\nwrote {RES/'attribution_table.csv'}")
 
 
