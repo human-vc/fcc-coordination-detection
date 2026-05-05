@@ -10,7 +10,7 @@
 # Edit STEP_1_SOURCE below to pick where the second-corpus comments come from.
 
 set -uo pipefail
-cd /Users/jacobcrainic/fcc-coordination-detection
+cd "$(dirname "$0")/.."
 
 # ============== CONFIG ==============
 CORPUS=${CORPUS:-fcc14_28}
