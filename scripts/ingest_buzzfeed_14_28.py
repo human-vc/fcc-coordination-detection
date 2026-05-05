@@ -30,17 +30,25 @@ def main() -> None:
     p.add_argument("--output-dir", type=Path, required=True)
     p.add_argument("--min-len", type=int, default=10)
     p.add_argument("--text-col-candidates", type=str,
-                   default="text_data,comment_text,comment,text",
+                   default="comments,text_data,comment_text,comment,text",
                    help="comma-separated candidate column names for comment text")
     p.add_argument("--id-col-candidates", type=str,
                    default="id_submission,submission_id,id,comment_id",
                    help="comma-separated candidate column names for submission id")
+    p.add_argument("--date-col-candidates", type=str,
+                   default="date,date_received,date_posted,received_date",
+                   help="comma-separated candidate column names for date")
+    p.add_argument("--uploader-col-candidates", type=str,
+                   default="name_and_location,contact_email_domain_uuid,name_and_location_uuid,email_domain,uploader_uuid",
+                   help="comma-separated candidate column names for uploader UUID")
+    p.add_argument("--csv-glob", type=str, default="*-with-uuids.csv",
+                   help="glob pattern under input-dir; default avoids picking up partial earlier scrapes")
     args = p.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    csvs = sorted(args.input_dir.glob("*.csv"))
+    csvs = sorted(args.input_dir.glob(args.csv_glob))
     if not csvs:
-        sys.exit(f"no CSVs in {args.input_dir}")
+        sys.exit(f"no CSVs matching {args.csv_glob} in {args.input_dir}")
     print(f"found {len(csvs)} CSV(s); concatenating...", flush=True)
 
     dfs = []
@@ -63,23 +71,28 @@ def main() -> None:
     if id_col is None:
         print(f"  WARN: no submission id column among {id_candidates}; will hash text", flush=True)
 
+    date_candidates = args.date_col_candidates.split(",")
+    date_col = next((c for c in date_candidates if c in df.columns), None)
+    if date_col:
+        print(f"  using date column: {date_col}", flush=True)
+
+    uploader_candidates = args.uploader_col_candidates.split(",")
+    uploader_col = next((c for c in uploader_candidates if c in df.columns), None)
+    if uploader_col:
+        print(f"  using uploader column: {uploader_col}", flush=True)
+
     df["comment_text"] = df[text_col].fillna("").astype(str).str.strip()
     df = df[df["comment_text"].str.len() >= args.min_len].reset_index(drop=True)
     print(f"  after filtering empty/short: {len(df):,}", flush=True)
 
     df["comment_id"] = df["comment_text"].apply(hash_text)
     df["submission_id"] = (df[id_col].astype(str) if id_col else df["comment_id"])
-    df["date_received"] = df.get("date_received", pd.Series([""] * len(df)))
+    df["date_received"] = (df[date_col].astype(str) if date_col else "")
     df["submission_type"] = df.get("submission_type", "comment")
     df["express_comment"] = "1"
     df["city"] = df.get("city", "")
     df["state"] = df.get("state", "")
-    if "contact_email_domain_uuid" in df.columns:
-        df["uploader_uuid"] = df["contact_email_domain_uuid"].fillna("")
-    elif "name_and_location_uuid" in df.columns:
-        df["uploader_uuid"] = df["name_and_location_uuid"].fillna("")
-    else:
-        df["uploader_uuid"] = ""
+    df["uploader_uuid"] = (df[uploader_col].fillna("").astype(str) if uploader_col else "")
     df["filer_name"] = df["uploader_uuid"]
 
     sub_cols = ["submission_id", "submission_type", "express_comment",
