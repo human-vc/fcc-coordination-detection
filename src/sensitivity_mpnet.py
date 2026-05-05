@@ -132,13 +132,11 @@ def main():
         emb = out
         print(f'  wrote {emb_path}')
 
-    print('\n[3/4] Computing fragmentation rate per candidate using MPNet sub-clustering...')
-    member_to_cluster = candidates.set_index('row_id')['cluster_id']
+    print('\n[3/4] Computing fragmentation rate per candidate at multiple τ thresholds...')
     rowmap_to_idx = {int(r): i for i, r in enumerate(rowmap)}
-
-    sims_threshold = 0.97
-    rows = []
-    t0 = time.time()
+    tau_values = [0.85, 0.90, 0.93, 0.95, 0.97, 0.98]
+    sub_emb_cache = {}
+    valid_cids = []
     for cid, sub in candidates.groupby('cluster_id'):
         if len(sub) < 8:
             continue
@@ -146,78 +144,75 @@ def main():
         idx = [i for i in idx if i is not None]
         if len(idx) < 8:
             continue
-        sub_emb = np.asarray(emb[idx], dtype=np.float32)
-        sub_emb /= np.maximum(np.linalg.norm(sub_emb, axis=1, keepdims=True), 1e-9)
-        sims = sub_emb @ sub_emb.T
-        adj = sims >= sims_threshold
-        np.fill_diagonal(adj, True)
-        n_pts = len(sub_emb)
-        comp = np.full(n_pts, -1)
-        comp_id = 0
-        for i in range(n_pts):
-            if comp[i] != -1:
-                continue
-            stack = [i]
-            while stack:
-                v = stack.pop()
-                if comp[v] != -1:
-                    continue
-                comp[v] = comp_id
-                stack.extend(np.where(adj[v] & (comp == -1))[0].tolist())
-            comp_id += 1
-        n_distinct = comp_id
-        rows.append({'cluster_id': int(cid), 'n': n_pts, 'n_distinct_fine': n_distinct,
-                     'fragmentation_rate': n_distinct / n_pts})
-    elapsed = time.time() - t0
-    print(f'  {len(rows):,} candidate clusters scored in {elapsed:.0f}s')
+        ee = np.asarray(emb[idx], dtype=np.float32)
+        ee /= np.maximum(np.linalg.norm(ee, axis=1, keepdims=True), 1e-9)
+        sub_emb_cache[int(cid)] = ee
+        valid_cids.append(int(cid))
+    print(f'  {len(valid_cids):,} valid clusters cached')
 
-    frag = pd.DataFrame(rows)
     labels = pd.read_csv(RES / 'fragmentation_scores.csv')[['cluster_id', 'y_astro', 'y_adv']]
-    frag = frag.merge(labels, on='cluster_id', how='inner')
+    sweep_rows = []
+    print('\n[4/4] Beta-mixture EM + AP at α=0.10 across τ values...')
+    for tau in tau_values:
+        rows = []
+        for cid in valid_cids:
+            ee = sub_emb_cache[cid]
+            sims = ee @ ee.T
+            adj = sims >= tau
+            n_pts = len(ee)
+            np.fill_diagonal(adj, True)
+            comp = np.full(n_pts, -1)
+            comp_id = 0
+            for i in range(n_pts):
+                if comp[i] != -1:
+                    continue
+                stack = [i]
+                while stack:
+                    v = stack.pop()
+                    if comp[v] != -1:
+                        continue
+                    comp[v] = comp_id
+                    stack.extend(np.where(adj[v] & (comp == -1))[0].tolist())
+                comp_id += 1
+            rows.append({'cluster_id': cid, 'n': n_pts, 'n_distinct': comp_id, 'fragmentation_rate': comp_id / n_pts})
+        frag = pd.DataFrame(rows).merge(labels, on='cluster_id', how='inner')
+        f = frag['fragmentation_rate'].to_numpy()
+        (a0, b0, w0), (a1, b1, w1) = fit_beta_2mix_em(f)
+        f_clipped = np.clip(f, 1e-6, 1 - 1e-6)
+        log_e = beta_dist.logpdf(f_clipped, a1, b1) - beta_dist.logpdf(f_clipped, a0, b0)
+        e_arr = np.exp(np.clip(log_e, -700, 700))
+        order = np.argsort(-e_arr)
+        K = len(frag)
+        threshold = K / (0.10 * np.arange(1, K + 1))
+        rej_idx = np.where(e_arr[order] >= threshold)[0]
+        k_hat = int(rej_idx.max() + 1) if rej_idx.size else 0
+        if k_hat > 0:
+            mask = frag.iloc[order[:k_hat]]
+            astro_pct = float(mask['y_astro'].mean())
+            adv_pct = float(mask['y_adv'].mean())
+            astro_recall = mask['y_astro'].sum() / max(int(frag['y_astro'].sum()), 1)
+        else:
+            astro_pct = adv_pct = astro_recall = 0.0
+        ap = average_precision_score(frag['y_astro'], log_e)
+        sweep_rows.append({
+            'embedding': 'mpnet-base-v2',
+            'tau': tau,
+            'g0_mean': a0 / (a0 + b0),
+            'g1_mean': a1 / (a1 + b1),
+            'g0_weight': w0,
+            'AP': ap,
+            'k_rejected': k_hat,
+            'precision_astro': astro_pct,
+            'precision_adv': adv_pct,
+            'recall_astro': astro_recall,
+        })
+        print(f'  τ={tau}: AP={ap:.3f}, rej={k_hat:,}, prec_astro={astro_pct:.3f}, recall={astro_recall:.3f}')
 
-    print('\n[4/4] Beta-mixture EM + AP at α=0.10...')
-    f = frag['fragmentation_rate'].to_numpy()
-    (a0, b0, w0), (a1, b1, w1) = fit_beta_2mix_em(f)
-    f_clipped = np.clip(f, 1e-6, 1 - 1e-6)
-    log_e = beta_dist.logpdf(f_clipped, a1, b1) - beta_dist.logpdf(f_clipped, a0, b0)
-    e = np.exp(np.clip(log_e, -700, 700))
-    order = np.argsort(-e)
-    e_sorted = e[order]
-    K = len(frag)
-    threshold = K / (0.10 * np.arange(1, K + 1))
-    rej_idx = np.where(e_sorted >= threshold)[0]
-    k_hat = int(rej_idx.max() + 1) if rej_idx.size else 0
-    if k_hat > 0:
-        mask = frag.iloc[order[:k_hat]]
-        astro_pct = float(mask['y_astro'].mean())
-        adv_pct = float(mask['y_adv'].mean())
-        astro_recall = mask['y_astro'].sum() / max(int(frag['y_astro'].sum()), 1)
-    else:
-        astro_pct = adv_pct = astro_recall = 0.0
-    ap = average_precision_score(frag['y_astro'], log_e)
-
-    print(f'\n=== MPNet result (cosine sub-cluster threshold τ={sims_threshold}) ===')
-    print(f'  K = {K:,}')
-    print(f'  Beta mixture: g0 mean={a0/(a0+b0):.3f} (w={w0:.3f}), g1 mean={a1/(a1+b1):.3f} (w={w1:.3f})')
-    print(f'  AP against NYAG: {ap:.3f}')
-    print(f'  e-BH at α=0.10: rejects {k_hat:,} ({100*k_hat/K:.1f}%)')
-    print(f'  precision astroturf: {astro_pct:.3f}')
-    print(f'  precision advocacy:  {adv_pct:.3f}')
-    print(f'  recall astroturf:    {astro_recall:.3f}')
-
+    out_df = pd.DataFrame(sweep_rows)
     out_path = RES / 'sensitivity_mpnet.csv'
-    pd.DataFrame([{
-        'embedding': 'mpnet-base-v2',
-        'gamma_fine_or_tau': sims_threshold,
-        'g0_mean': a0 / (a0 + b0),
-        'g1_mean': a1 / (a1 + b1),
-        'g0_weight': w0,
-        'AP': ap,
-        'k_rejected': k_hat,
-        'precision_astro': astro_pct,
-        'precision_adv': adv_pct,
-        'recall_astro': astro_recall,
-    }]).to_csv(out_path, index=False)
+    out_df.to_csv(out_path, index=False)
+    print(f'\nfull sweep:')
+    print(out_df.to_string(index=False))
     print(f'\nwrote {out_path}')
 
 
