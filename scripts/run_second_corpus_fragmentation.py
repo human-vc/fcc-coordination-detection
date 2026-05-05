@@ -89,25 +89,25 @@ def fragmentation_at(coarse_df, fine_df, min_size=8):
     return g.rename(columns={'coarse_id': 'cluster_id'})
 
 
-def fcc14_28_labels(coarse_df, proc_dir, top_n_bulk=20):
-    """Bulk-uploader ground truth for FCC 14-28: cluster's modal uploader UUID
-    is in the top-N most-frequent uploader UUIDs corpus-wide.
-    Also: template_size-based and uploader-concentration labels.
+def fcc14_28_labels(coarse_df, proc_dir, top_n_bulk=100):
+    """Coordination labels for FCC 14-28:
+    - y_bulk: cluster modal uploader is in top-N most-frequent uploader UUIDs
+    - y_concentrated: cluster modal uploader >= 50% of members
+    - y_template: cluster max template_size >= 5 (high exact-duplicate signal)
+    - y_heavy_template: cluster max template_size >= 10
     """
     sub = pq.read_table(proc_dir / 'submissions.parquet', columns=['comment_id', 'uploader_uuid']).to_pandas()
     sub = sub[sub['uploader_uuid'].fillna('') != '']
 
     uploader_freq = sub.groupby('uploader_uuid').size().sort_values(ascending=False)
     top_uploaders = set(uploader_freq.head(top_n_bulk).index)
-    print(f'  top {top_n_bulk} uploaders by frequency: {len(top_uploaders)}')
-    print(f'  top uploader sizes: {list(uploader_freq.head(5).items())}')
+    print(f'  top {top_n_bulk} uploader sizes: min={uploader_freq.head(top_n_bulk).iloc[-1] if len(uploader_freq) >= top_n_bulk else 0}, max={uploader_freq.iloc[0]}')
 
     members = coarse_df[(coarse_df['cluster_id'] >= 0)][['row_id', 'comment_id', 'cluster_id']]
-    members = members.merge(sub, on='comment_id', how='left')
-
-    cluster_uploader = (members.dropna(subset=['uploader_uuid'])
-                                .groupby(['cluster_id', 'uploader_uuid']).size()
-                                .reset_index(name='n'))
+    members_u = members.merge(sub, on='comment_id', how='left')
+    cluster_uploader = (members_u.dropna(subset=['uploader_uuid'])
+                                  .groupby(['cluster_id', 'uploader_uuid']).size()
+                                  .reset_index(name='n'))
     modal = (cluster_uploader.sort_values(['cluster_id', 'n'], ascending=[True, False])
                               .groupby('cluster_id').first().reset_index()
                               .rename(columns={'uploader_uuid': 'modal_uploader',
@@ -117,9 +117,27 @@ def fcc14_28_labels(coarse_df, proc_dir, top_n_bulk=20):
     modal['modal_uploader_count'] = modal['modal_uploader_count'].fillna(0).astype(int)
     modal['modal_uploader_frac'] = modal['modal_uploader_count'] / modal['n_total'].clip(lower=1)
     modal['y_bulk'] = modal['modal_uploader'].isin(top_uploaders).astype(int)
-    modal['y_concentrated'] = (modal['modal_uploader_frac'] >= 0.8).astype(int)
-    return modal[['cluster_id', 'modal_uploader', 'modal_uploader_count',
-                  'modal_uploader_frac', 'y_bulk', 'y_concentrated']]
+    modal['y_concentrated'] = (modal['modal_uploader_frac'] >= 0.5).astype(int)
+
+    idx = pq.read_table(proc_dir / 'embedding_index.parquet',
+                        columns=['row_id', 'template_size']).to_pandas()
+    members_t = members.merge(idx, on='row_id', how='left')
+    members_t['template_size'] = members_t['template_size'].fillna(1).astype(int)
+    g = members_t.groupby('cluster_id').agg(
+        max_template=('template_size', 'max'),
+        sum_template=('template_size', 'sum'),
+    ).reset_index()
+    g['y_template'] = (g['max_template'] >= 5).astype(int)
+    g['y_heavy_template'] = (g['max_template'] >= 10).astype(int)
+    g['y_very_heavy_template'] = (g['max_template'] >= 100).astype(int)
+
+    out = modal.merge(g, on='cluster_id', how='outer')
+    out['max_template'] = out['max_template'].fillna(1).astype(int)
+    out['sum_template'] = out['sum_template'].fillna(1).astype(int)
+    return out[['cluster_id', 'modal_uploader', 'modal_uploader_count',
+                'modal_uploader_frac', 'max_template', 'sum_template',
+                'y_bulk', 'y_concentrated', 'y_template', 'y_heavy_template',
+                'y_very_heavy_template']]
 
 
 def cfpb_labels(coarse_df, proc_dir, template_threshold=10):
@@ -165,7 +183,7 @@ def main():
     if args.corpus == 'fcc14_28':
         labels = fcc14_28_labels(coarse, args.proc_dir)
         frag = frag.merge(labels, on='cluster_id', how='left')
-        target_cols = ['y_bulk', 'y_concentrated']
+        target_cols = ['y_template', 'y_heavy_template', 'y_very_heavy_template', 'y_bulk', 'y_concentrated']
     else:
         labels = cfpb_labels(coarse, args.proc_dir)
         frag = frag.merge(labels, on='cluster_id', how='left')
