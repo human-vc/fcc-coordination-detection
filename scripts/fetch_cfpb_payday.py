@@ -44,8 +44,8 @@ def fetch_window_paginated(*, api_key: str, date_from: str, date_to: str,
     while True:
         params = {
             "filter[docketId]": docket_id,
-            "filter[lastModifiedDate][ge]": date_from,
-            "filter[lastModifiedDate][le]": date_to,
+            "filter[lastModifiedDate][ge]": f"{date_from} 00:00:00",
+            "filter[lastModifiedDate][le]": f"{date_to} 23:59:59",
             "page[size]": PAGE_SIZE,
             "page[number]": page,
             "sort": "lastModifiedDate",
