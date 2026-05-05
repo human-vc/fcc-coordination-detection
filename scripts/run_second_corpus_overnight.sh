@@ -45,8 +45,9 @@ if ! done_marker step1_raw; then
         log "  Then run:  export FCC_API_KEY=...  before launching this script."
         exit 1
       fi
-      $PY scripts/fetch_fcc_ecfs.py --proceeding 14-28 \
+      $PY scripts/fetch_fcc14_28.py --proceeding 14-28 \
           --output-dir "$RAW_DIR" --api-key "$FCC_API_KEY" \
+          --max-records 1600000 --limit 100 --delay 0.15 \
           || { log "fetch failed"; exit 2; }
       ;;
     regulations_gov)
