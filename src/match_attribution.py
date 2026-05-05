@@ -39,13 +39,18 @@ def text_hash(s: str | float) -> str:
 
 
 def main(*, top_n_uploaders: int = 10,
-         cluster_path: Path | None = None) -> None:
+         cluster_path: Path | None = None,
+         rejections_path: Path | None = None,
+         output_csv: Path | None = None) -> None:
     bf_path = PROC / "buzzfeed_bulk_uploads.parquet"
     sl_comments = PROC / "comments.parquet"
     cluster_path = cluster_path or (PROC / "clusters.parquet")
-    rejections = RES / "fdr_rejections_leiden.parquet"
-    if not rejections.exists():
-        rejections = PROC / "fdr_rejections.parquet"
+    if rejections_path is not None:
+        rejections = rejections_path
+    else:
+        rejections = RES / "fdr_rejections_leiden.parquet"
+        if not rejections.exists():
+            rejections = PROC / "fdr_rejections.parquet"
 
     if not bf_path.exists():
         raise SystemExit(f"missing {bf_path}; run src/ingest_buzzfeed.py first")
@@ -115,7 +120,8 @@ def main(*, top_n_uploaders: int = 10,
             "top_label": top_label,
         })
     out = pd.DataFrame(rows).sort_values("frac_astroturf", ascending=False)
-    out.to_csv(RES / "attribution_table.csv", index=False)
+    out_path = output_csv or (RES / "attribution_table.csv")
+    out.to_csv(out_path, index=False)
 
     print(f"\nrejected clusters analyzed: {len(out):,}")
     print(f"  avg frac matched to BuzzFeed: {out['frac_matched_buzzfeed'].mean():.3f}")
@@ -125,7 +131,7 @@ def main(*, top_n_uploaders: int = 10,
     print(f"  clusters >=50% advocacy:      {(out['frac_advocacy'] >= 0.5).sum():,}")
     print(f"  clusters >=50% any matched:   "
           f"{(out['frac_matched_buzzfeed'] >= 0.5).sum():,}")
-    print(f"\nwrote {RES/'attribution_table.csv'}")
+    print(f"\nwrote {out_path}")
 
 
 if __name__ == "__main__":
@@ -133,5 +139,13 @@ if __name__ == "__main__":
     p.add_argument("--top-n-uploaders", type=int, default=10)
     p.add_argument("--cluster-path", type=Path, default=None,
                    help="default: data/processed/clusters.parquet")
+    p.add_argument("--rejections-path", type=Path, default=None,
+                   help="default: results/fdr_rejections_leiden.parquet "
+                   "or data/processed/fdr_rejections.parquet")
+    p.add_argument("--output-csv", type=Path, default=None,
+                   help="default: results/attribution_table.csv")
     args = p.parse_args()
-    main(top_n_uploaders=args.top_n_uploaders, cluster_path=args.cluster_path)
+    main(top_n_uploaders=args.top_n_uploaders,
+         cluster_path=args.cluster_path,
+         rejections_path=args.rejections_path,
+         output_csv=args.output_csv)

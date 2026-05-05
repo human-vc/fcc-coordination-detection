@@ -56,3 +56,9 @@ notebooks/.ipynb_checkpoints/
 # Logs
 *.log
 logs/
+
+# API keys
+.env_*
+
+# Second corpus raw downloads
+data/raw_fcc14_28/

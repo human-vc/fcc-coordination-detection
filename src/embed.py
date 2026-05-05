@@ -41,11 +41,12 @@ def default_batch_size(dev: str) -> int:
 
 
 def main(*, batch_size: int | None = None, model_name: str = "all-MiniLM-L6-v2",
-         limit: int | None = None) -> None:
+         limit: int | None = None, output_path: Path | None = None) -> None:
     dev = device()
     if batch_size is None:
         batch_size = default_batch_size(dev)
-    print(f"device: {dev}  batch_size: {batch_size}")
+    print(f"device: {dev}  batch_size: {batch_size}  model: {model_name}")
+    out_path = output_path or EMB_PATH
 
     print("loading template-size counts...")
     con = duckdb.connect()
@@ -100,16 +101,20 @@ def main(*, batch_size: int | None = None, model_name: str = "all-MiniLM-L6-v2",
     elapsed = time() - t0
     print(f"\nembedded {written:,} in {elapsed:.1f}s ({written/elapsed:.0f}/s)")
 
-    np.save(EMB_PATH, out)
-    print(f"wrote embeddings to {EMB_PATH}  ({out.nbytes/1e6:.1f} MB)")
+    np.save(out_path, out)
+    print(f"wrote embeddings to {out_path}  ({out.nbytes/1e6:.1f} MB)")
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--batch-size", type=int, default=None,
                    help="default: 1024 on CUDA, 256 on MPS, 64 on CPU")
-    p.add_argument("--model", default="all-MiniLM-L6-v2")
+    p.add_argument("--model", default="all-MiniLM-L6-v2",
+                   help="HF model name OR local path to fine-tuned model")
+    p.add_argument("--output-path", type=Path, default=None,
+                   help="default: data/processed/embeddings.npy")
     p.add_argument("--limit", type=int, default=None,
                    help="for testing: embed only first N rows")
     args = p.parse_args()
-    main(batch_size=args.batch_size, model_name=args.model, limit=args.limit)
+    main(batch_size=args.batch_size, model_name=args.model,
+         limit=args.limit, output_path=args.output_path)
