@@ -62,3 +62,14 @@ logs/
 
 # Second corpus raw downloads
 data/raw_fcc14_28/
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
+paper/neurips_*.sty
