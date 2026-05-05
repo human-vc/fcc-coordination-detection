@@ -21,7 +21,7 @@ mkdir -p "$RAW_DIR" "$PROC_DIR" "$RES_DIR"
 
 # Pick ONE source. Default: FCC ECFS API (needs FCC_API_KEY env var).
 # Other options below.
-STEP_1_SOURCE=${STEP_1_SOURCE:-fcc_ecfs}   # fcc_ecfs | regulations_gov | manual
+STEP_1_SOURCE=${STEP_1_SOURCE:-fcc_ecfs}   # fcc_ecfs | cfpb_payday | regulations_gov | manual
 
 # Whitening / q̂ / pipeline knobs
 WHITEN_K=${WHITEN_K:-5}
@@ -48,6 +48,19 @@ if ! done_marker step1_raw; then
       $PY scripts/fetch_fcc14_28.py --proceeding 14-28 \
           --output-dir "$RAW_DIR" --api-key "$FCC_API_KEY" \
           --max-records 1600000 --limit 100 --delay 0.15 \
+          || { log "fetch failed"; exit 2; }
+      ;;
+    cfpb_payday)
+      KEY="${REGULATIONS_API_KEY:-${FCC_API_KEY:-}}"
+      if [ -z "$KEY" ]; then
+        log "ERROR: REGULATIONS_API_KEY (or FCC_API_KEY, same data.gov key) not set."
+        exit 1
+      fi
+      $PY scripts/fetch_cfpb_payday.py \
+          --output-dir "$RAW_DIR" --api-key "$KEY" \
+          --docket-id CFPB-2016-0025 \
+          --date-from 2016-06-01 --date-to 2018-12-31 \
+          --initial-window-days 14 \
           || { log "fetch failed"; exit 2; }
       ;;
     regulations_gov)
