@@ -1,0 +1,43 @@
+{
+  "alpha": 0.1,
+  "oracle_calibration": "Bayes-LR: E^oracle = (p/(1-p)) * ((1-pi0)/pi0)",
+  "pi0": 0.6144272288544577,
+  "metrics_y_astro": {
+    "triple_fold_unsup": {
+      "k_rejected": 9768,
+      "AP": 0.4985154680296577,
+      "precision": 0.615990990990991,
+      "recall": 0.9909420289855072
+    },
+    "para_multi_unsup": {
+      "k_rejected": 7516,
+      "AP": 0.8354395244210232,
+      "precision": 0.8005588078765301,
+      "recall": 0.9909420289855072
+    },
+    "oracle_calibrated": {
+      "k_rejected": 0,
+      "AP": 0.9253741146388432,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "stacked_full_oracle": {
+      "k_rejected": 9725,
+      "AP": 0.49269683960602695,
+      "precision": 0.6187146529562982,
+      "recall": 0.9909420289855072
+    },
+    "stacked_para_oracle": {
+      "k_rejected": 7516,
+      "AP": 0.8757372098991558,
+      "precision": 0.8005588078765301,
+      "recall": 0.9909420289855072
+    },
+    "raw_gbm": {
+      "k_rejected": 0,
+      "AP": 0.9253741146388432,
+      "precision": 0.0,
+      "recall": 0.0
+    }
+  }
+}

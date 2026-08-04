@@ -80,11 +80,29 @@ def main() -> None:
             p = precision_score(y, pred, zero_division=0)
             r = recall_score(y, pred, zero_division=0)
             print(f'  {name} @ recall={target_recall:.2f}: precision={100 * p:.1f}%, actual_recall={100 * r:.1f}%, n_flagged={int(pred.sum()):,}')
-    clf = GradientBoostingClassifier(n_estimators=200, max_depth=3, random_state=0)
-    clf.fit(X, y)
-    df['score_supervised'] = clf.predict_proba(X)[:, 1]
+    print()
+    print('=== honest out-of-fold predictions (5-fold CV, GBM) ===')
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    oof = np.zeros(len(X), dtype=float)
+    for (tr, te) in skf.split(X, y):
+        clf = GradientBoostingClassifier(n_estimators=200, max_depth=3, random_state=0)
+        clf.fit(X[tr], y[tr])
+        oof[te] = clf.predict_proba(X[te])[:, 1]
+    oof_ap = average_precision_score(y, oof)
+    print(f'  GBM OOF AP: {oof_ap:.4f}')
+
+    clf_full = GradientBoostingClassifier(n_estimators=200, max_depth=3, random_state=0)
+    clf_full.fit(X, y)
+    insample = clf_full.predict_proba(X)[:, 1]
+    insample_ap = average_precision_score(y, insample)
+    print(f'  GBM full-data (in-sample) AP: {insample_ap:.4f}  (LEAKY — for comparison only)')
+
+    df['score_supervised'] = oof
+    df['score_supervised_insample'] = insample
     df.to_csv(RES / 'supervised_baseline_scores.csv', index=False)
     print()
     print(f'wrote {RES}/supervised_baseline_scores.csv')
+    print(f'  score_supervised = OOF predictions (honest)')
+    print(f'  score_supervised_insample = full-data-trained predictions (leaky, kept for ablation)')
 if __name__ == '__main__':
     main()

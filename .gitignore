@@ -76,3 +76,6 @@ paper/neurips_*.sty
 
 # Paper artifacts (kept locally, not on github)
 paper/
+
+# exceeds GitHub 100MB file limit; regenerate with scripts/relabel_fcc14_28.py
+results_fcc14_28/normalized_template_labels.csv
